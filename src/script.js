@@ -1,71 +1,51 @@
 // import './style.css';
 // import { isToday, isThisWeek } from 'date-fns';
 
-const projectObjProto = {
-  addToDoObj(toDoObj) {
-    this.arr.push(toDoObj);
-  },
-  removeToDoObj(title) {
-    for (let i = 0; i < this.arr.length; i++) {
-      if (this.arr[i].title === title) {
-        this.arr.splice(i, i);
-        break;
+const storage = (() => {
+  function saveProject(projectObj) {
+    localStorage.setItem(projectObj.name, projectObj);
+  }
+
+  function getProject(name) {
+    return localStorage.getItem(name);
+  }
+
+  return { saveProject, getProject };
+})();
+
+const projectControl = (() => {
+  const projectObjProto = {
+    addToDoObj(toDoObj) {
+      this.arr.push(toDoObj);
+    },
+    removeToDoObj(title) {
+      for (let i = 0; i < this.arr.length; i++) {
+        if (this.arr[i].title === title) {
+          this.arr.splice(i, i);
+          break;
+        }
       }
-    }
-  },
-  get name() {
-    return this.name;
-  },
-};
+    },
+    get name() {
+      return this.name;
+    },
+  };
 
-const projectObj = (name) => {
-  this.name = name;
-  let arr = [];
-  return Object.create(projectObjProto);
-};
-
-const toDoProto = {
-  get title() {
-    return this.title;
-  },
-  get desc() {
-    return this.desc;
-  },
-  get dueDate() {
-    return this.dueDate;
-  },
-  get priority() {
-    return this.priority;
-  },
-  set title(value) {
-    this.title = value;
-  },
-  set desc(value) {
-    this.desc = value;
-  },
-  set dueDate(value) {
-    this.dueDate = value;
-  },
-  set priority(value) {
-    this.priority = value;
-  },
-};
-
-const toDoObj = (title, desc, dueDate, priority) => {
-  this.title = title;
-  this.desc = desc;
-  this.dueDate = dueDate;
-  this.priority = priority;
-  return Object.create(toDoProto);
-};
+  const projectObj = (name) => {
+    this.name = name;
+    let arr = [];
+    return Object.create(projectObjProto);
+  };
+  return {};
+})();
 
 const DOMcontroller = (() => {
   const content = document.querySelector('.content');
 
   function addInput() {
     const div = document.createElement('div');
+    div.setAttribute('id', 'input-container');
     div.innerHTML = `<form action="#">
-        <div id="input-container">
           <input type="text" name="title" placeholder="Title: Buy Groceries" required/>
           <textarea name="desc" id="desc-input" placeholder="Details: "></textarea>
           <input type="date" name="dueDate" required/>
@@ -76,17 +56,8 @@ const DOMcontroller = (() => {
             <option value="high">High</option>
           </select>
           <input type="submit" value= "Add" id="submit-button"/>
-        </div>`;
+          </form>`;
     content.appendChild(div);
-    const form = document.querySelector('form');
-    form.addEventListener('submit', handleSubmit);
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const formProps = Object.fromEntries(formData);
-    console.log(formProps);
   }
 
   function addProject(projectObj) {
@@ -99,21 +70,31 @@ const DOMcontroller = (() => {
 
   function removeProject() {}
 
-  function addToDo() {
-    const div = document.createElement('div');
-    div.setAttribute('data-priority', priority);
+  function addToDo(toDoObj) {
+    const container = document
+      .createElement('div')
+      .setAttribute('data-priority', toDoObj.priority);
+    const checkbox = document.createElement('input').classList.add('checkbox');
+    const title = document.createElement('div').classList.add('todo-title');
+    title.textContent = toDoObj.title;
+    const desc = document.createElement('div').classList.add('todo-desc');
+    desc.textContent = toDoObj.desc;
+    container.appendChild(checkbox);
+    container.appendChild(title);
+    container.appendChild(desc);
   }
 
   function removeToDo() {}
 
   function updateToDo() {}
 
-  function changeTab() {}
+  function getTab() {}
 
-  return { addInput, handleSubmit };
+  return { addInput, addToDo };
 })();
 
-const MasterControl = (() => {
+const masterControl = (() => {
+  let currentProject = 'Home';
   function newToDo() {
     // Add todo using projectObj and DOM controller add
   }
@@ -130,9 +111,20 @@ const MasterControl = (() => {
     //ToDoObj.setPriority and update through DOMcontroller
   }
 
+  function changeTab() {}
+
   function readInput() {
     return {};
   }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const toDoObj = Object.fromEntries(formData);
+    console.log(toDoObj);
+  }
+
+  return { handleSubmit, changeTab };
 })();
 
 // ToDo can have data-key according to index in project arr to identify itself
@@ -150,3 +142,8 @@ const MasterControl = (() => {
 // Check that project doesn't already exist
 
 DOMcontroller.addInput();
+const form = document.querySelector('form');
+form.addEventListener('submit', masterControl.handleSubmit);
+
+const projectContainer = document.querySelector('#project-container');
+projectContainer.addEventListener('click', masterControl.changeTab);
