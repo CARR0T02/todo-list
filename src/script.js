@@ -1,5 +1,5 @@
-import './style.css';
-import { isToday, isThisWeek } from 'date-fns';
+// import './style.css';
+// import { isToday, isThisWeek } from 'date-fns';
 
 const projectObjProto = {
   addToDoObj(toDoObj) {
@@ -13,9 +13,13 @@ const projectObjProto = {
       }
     }
   },
+  get name() {
+    return this.name;
+  },
 };
 
-const projectObj = () => {
+const projectObj = (name) => {
+  this.name = name;
   let arr = [];
   return Object.create(projectObjProto);
 };
@@ -48,26 +52,72 @@ const toDoProto = {
 };
 
 const toDoObj = (title, desc, dueDate, priority) => {
-  let title = title;
-  let desc = desc;
-  let dueDate = dueDate;
-  let priority = priority;
+  this.title = title;
+  this.desc = desc;
+  this.dueDate = dueDate;
+  this.priority = priority;
   return Object.create(toDoProto);
 };
 
 const DOMcontroller = (() => {
-  function addProject() {}
+  const content = document.querySelector('.content');
+
+  function addInput() {
+    const div = document.createElement('div');
+    div.innerHTML = `<form action="#">
+        <div id="input-container">
+          <input type="text" name="title" placeholder="Title: Buy Groceries" required/>
+          <textarea name="desc" id="desc-input" placeholder="Details: "></textarea>
+          <input type="date" name="dueDate" required/>
+          <select name="priority" id="priority-input" required>
+            <option value="" disabled selected>Priority</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <input type="submit" value= "Add" id="submit-button"/>
+        </div>`;
+    content.appendChild(div);
+    const form = document.querySelector('form');
+    form.addEventListener('submit', handleSubmit);
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const formProps = Object.fromEntries(formData);
+    console.log(formProps);
+  }
+
+  function addProject(projectObj) {
+    const li = document.createElement('li');
+    const container = document.querySelector('#project-container');
+    li.textContent = projectObj.name;
+    li.classList.add('project');
+    container.appendChild(li);
+  }
 
   function removeProject() {}
 
-  function addToDo() {}
+  function addToDo() {
+    const div = document.createElement('div');
+    div.setAttribute('data-priority', priority);
+  }
 
   function removeToDo() {}
 
   function updateToDo() {}
+
+  function changeTab() {}
+
+  return { addInput, handleSubmit };
 })();
 
 const MasterControl = (() => {
+  function newToDo() {
+    // Add todo using projectObj and DOM controller add
+  }
+
   function removeToDo() {
     //Remove todo using projectObj and DOM controller remove
   }
@@ -78,6 +128,10 @@ const MasterControl = (() => {
 
   function changePriority() {
     //ToDoObj.setPriority and update through DOMcontroller
+  }
+
+  function readInput() {
+    return {};
   }
 })();
 
@@ -94,3 +148,5 @@ const MasterControl = (() => {
 // Filter todo by priority
 
 // Check that project doesn't already exist
+
+DOMcontroller.addInput();
