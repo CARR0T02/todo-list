@@ -25,7 +25,7 @@ const projectControl = (() => {
       this.arr.push(toDoObj);
     },
     removeToDoObj(title) {
-      this.arr = this.arr.filter((search) => search === title);
+      this.arr = this.arr.filter((toDoObj) => toDoObj.title !== title);
     },
     getName() {
       return this.name;
@@ -36,7 +36,6 @@ const projectControl = (() => {
     let projectObj = Object.create(projectObjProto);
     projectObj.name = name;
     projectObj.arr = [];
-    console.log(projectObj, '  createProjectObj method');
     return projectObj;
   };
 
@@ -90,6 +89,7 @@ const DOMcontroller = (() => {
     const checkbox = document.createElement('input');
     checkbox.setAttribute('type', 'checkbox');
     checkbox.classList.add('checkbox');
+    checkbox.addEventListener('click', masterControl.removeToDo);
     const title = document.createElement('div');
     title.classList.add('todo-title');
     title.textContent = toDoObj.title;
@@ -103,18 +103,17 @@ const DOMcontroller = (() => {
     toDoContainer.appendChild(desc);
     toDoContainer.appendChild(dueDate);
     content.insertBefore(toDoContainer, input);
+    return toDoContainer;
   }
 
-  function removeToDo(toDoObj) {
-    // const toDoContainer = content.querySelector(`[data-key=${toDoObj.title}]`);
-    // console.log(toDoContainer);
+  function removeToDo(toDoElement) {
+    toDoElement.remove();
   }
 
   function updateToDo() {}
 
   function loadTab(projectObj) {
-    let arr = projectObj.arr;
-    for (const toDoObj of arr) {
+    for (const toDoObj of projectObj.arr) {
       addToDo(toDoObj);
     }
   }
@@ -144,12 +143,15 @@ const masterControl = (() => {
     DOMcontroller.addToDo(toDoObj);
   }
 
-  function removeToDo() {
-    //Remove todo using projectObj and DOM controller remove
+  function removeToDo(e) {
+    const toDoElement = e.target.parentElement;
+    currentProjectObj.removeToDoObj(toDoElement.getAttribute('data-title'));
+    storage.saveProject(currentProjectObj);
+    DOMcontroller.removeToDo(toDoElement);
   }
 
   function newProject() {
-    projectControl.createProjectObj;
+    // projectControl.createProjectObj;
   }
 
   function changePriority() {
@@ -162,7 +164,7 @@ const masterControl = (() => {
     return {};
   }
 
-  return { changeTab, newProject, newToDo, initialise };
+  return { changeTab, newProject, newToDo, removeToDo, initialise };
 })();
 
 // Event listener on sidebar with e.target to know which project is clicked
