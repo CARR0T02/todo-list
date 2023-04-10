@@ -4,6 +4,7 @@
 const storage = (() => {
   function saveProject(projectObj) {
     localStorage.setItem(projectObj.getName(), JSON.stringify(projectObj));
+    console.log(localStorage);
   }
 
   function getProject(name) {
@@ -12,11 +13,15 @@ const storage = (() => {
     );
   }
 
+  function getAllProjectNames() {
+    return Object.keys(localStorage);
+  }
+
   function isEmpty(name) {
     return localStorage.getItem(name) === null;
   }
 
-  return { saveProject, getProject, isEmpty };
+  return { saveProject, getProject, getAllProjectNames, isEmpty };
 })();
 
 const projectControl = (() => {
@@ -51,7 +56,7 @@ const DOMcontroller = (() => {
   function addInput() {
     const div = document.createElement('div');
     div.setAttribute('id', 'input-container');
-    div.innerHTML = `<form action="#">
+    div.innerHTML = `<form action="#" id='todo-form'>
           <input type="text" name="title" placeholder="Title: Buy Groceries" required/>
           <textarea name="desc" id="desc-input" placeholder="Details: "></textarea>
           <input type="date" name="dueDate" required/>
@@ -67,19 +72,24 @@ const DOMcontroller = (() => {
   }
 
   function addProjectInput() {
-    // const div = document.createElement('div');
-    // div.setAttribute('id', 'project-input-container');
+    const projectInput = document.querySelector('#project-form');
+    projectInput.classList.toggle('hidden');
   }
 
-  function addProject(projectObj) {
-    const li = document.createElement('li');
+  function loadProjects(projectNameArr) {
     const container = document.querySelector('#project-container');
-    li.textContent = projectObj.getName();
-    li.classList.add('project');
-    container.appendChild(li);
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    for (const projectName of projectNameArr) {
+      if (projectName !== 'Home') {
+        const li = document.createElement('li');
+        li.textContent = projectName;
+        li.classList.add('project');
+        container.appendChild(li);
+      }
+    }
   }
-
-  function removeProject() {}
 
   function addToDo(toDoObj) {
     const input = document.querySelector('#input-container');
@@ -103,7 +113,6 @@ const DOMcontroller = (() => {
     toDoContainer.appendChild(desc);
     toDoContainer.appendChild(dueDate);
     content.insertBefore(toDoContainer, input);
-    return toDoContainer;
   }
 
   function removeToDo(toDoElement) {
@@ -118,7 +127,14 @@ const DOMcontroller = (() => {
     }
   }
 
-  return { addInput, addToDo, removeToDo, loadTab };
+  return {
+    addInput,
+    addProjectInput,
+    loadProjects,
+    addToDo,
+    removeToDo,
+    loadTab,
+  };
 })();
 
 const masterControl = (() => {
@@ -129,8 +145,15 @@ const masterControl = (() => {
       let home = projectControl.createProjectObj('Home');
       storage.saveProject(home);
     }
-    currentProjectObj = storage.getProject('Home');
-    DOMcontroller.loadTab(currentProjectObj);
+    loadProjects();
+    loadTab();
+    DOMcontroller.addInput();
+    const addProjectButton = document.querySelector('#add-project-button');
+    addProjectButton.addEventListener('click', DOMcontroller.addProjectInput);
+    const projectForm = document.querySelector('#project-form');
+    projectForm.addEventListener('submit', masterControl.newProject);
+    const toDoForm = document.querySelector('#todo-form');
+    toDoForm.addEventListener('submit', masterControl.newToDo);
     console.log(currentProjectObj);
   }
 
@@ -150,21 +173,31 @@ const masterControl = (() => {
     DOMcontroller.removeToDo(toDoElement);
   }
 
-  function newProject() {
-    // projectControl.createProjectObj;
+  function newProject(e) {
+    e.preventDefault();
+    const project = document.querySelector('#project-name').value;
+    let newProject = projectControl.createProjectObj(project);
+    storage.saveProject(newProject);
+    loadProjects();
+  }
+  function loadProjects() {
+    DOMcontroller.loadProjects(storage.getAllProjectNames());
   }
 
   function changePriority() {
     //ToDoObj.setPriority and update through DOMcontroller
   }
 
-  function changeTab() {}
+  function loadTab() {
+    currentProjectObj = storage.getProject(currentProject);
+    DOMcontroller.loadTab(currentProjectObj);
+  }
 
   function readInput() {
     return {};
   }
 
-  return { changeTab, newProject, newToDo, removeToDo, initialise };
+  return { loadTab, newProject, newToDo, removeToDo, initialise };
 })();
 
 // Event listener on sidebar with e.target to know which project is clicked
@@ -176,11 +209,8 @@ const masterControl = (() => {
 // Check that project doesn't already exist
 
 masterControl.initialise();
-DOMcontroller.addInput();
-const form = document.querySelector('form');
-form.addEventListener('submit', masterControl.newToDo);
 
 const navButtons = document.querySelector('#nav-buttons');
 navButtons.addEventListener('click', masterControl.changeTab);
-const addProjectButton = document.querySelector('#add-project-button');
-addProjectButton.addEventListener('click', masterControl.newProject);
+
+// WORKING ON ADDING PROJECT FUNCTIONALITY
