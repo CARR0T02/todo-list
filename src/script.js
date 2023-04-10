@@ -92,7 +92,7 @@ const DOMcontroller = (() => {
   }
 
   function addToDo(toDoObj) {
-    const input = document.querySelector('#input-container');
+    const main = document.querySelector('#main');
     const toDoContainer = document.createElement('div');
     toDoContainer.setAttribute('data-priority', toDoObj.priority);
     toDoContainer.setAttribute('data-title', toDoObj.title);
@@ -112,7 +112,7 @@ const DOMcontroller = (() => {
     toDoContainer.appendChild(title);
     toDoContainer.appendChild(desc);
     toDoContainer.appendChild(dueDate);
-    content.insertBefore(toDoContainer, input);
+    main.appendChild(toDoContainer);
   }
 
   function removeToDo(toDoElement) {
@@ -122,8 +122,16 @@ const DOMcontroller = (() => {
   function updateToDo() {}
 
   function loadTab(projectObj) {
+    clearTab();
     for (const toDoObj of projectObj.arr) {
       addToDo(toDoObj);
+    }
+  }
+
+  function clearTab() {
+    const main = document.querySelector('#main');
+    while (main.firstChild) {
+      main.removeChild(main.firstChild);
     }
   }
 
@@ -154,7 +162,8 @@ const masterControl = (() => {
     projectForm.addEventListener('submit', masterControl.newProject);
     const toDoForm = document.querySelector('#todo-form');
     toDoForm.addEventListener('submit', masterControl.newToDo);
-    console.log(currentProjectObj);
+    const projectContainer = document.querySelector('#project-container');
+    projectContainer.addEventListener('click', changeProject);
   }
 
   function newToDo(e) {
@@ -190,11 +199,19 @@ const masterControl = (() => {
 
   function loadTab() {
     currentProjectObj = storage.getProject(currentProject);
+    console.log(currentProjectObj);
     DOMcontroller.loadTab(currentProjectObj);
   }
 
   function readInput() {
     return {};
+  }
+
+  function changeProject(e) {
+    console.log(e.target);
+    currentProject = e.target.textContent;
+    console.log(currentProject);
+    loadTab();
   }
 
   return { loadTab, newProject, newToDo, removeToDo, initialise };
@@ -209,8 +226,3 @@ const masterControl = (() => {
 // Check that project doesn't already exist
 
 masterControl.initialise();
-
-const navButtons = document.querySelector('#nav-buttons');
-navButtons.addEventListener('click', masterControl.changeTab);
-
-// WORKING ON ADDING PROJECT FUNCTIONALITY
