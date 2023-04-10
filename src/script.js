@@ -4,7 +4,6 @@
 const storage = (() => {
   function saveProject(projectObj) {
     localStorage.setItem(projectObj.getName(), JSON.stringify(projectObj));
-    console.log(localStorage);
   }
 
   function getProject(name) {
@@ -71,7 +70,7 @@ const DOMcontroller = (() => {
     content.appendChild(div);
   }
 
-  function addProjectInput() {
+  function toggleProjectInput() {
     const projectInput = document.querySelector('#project-form');
     projectInput.classList.toggle('hidden');
   }
@@ -81,6 +80,7 @@ const DOMcontroller = (() => {
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
+    console.log(projectNameArr);
     for (const projectName of projectNameArr) {
       if (projectName !== 'Home') {
         const li = document.createElement('li');
@@ -137,7 +137,7 @@ const DOMcontroller = (() => {
 
   return {
     addInput,
-    addProjectInput,
+    toggleProjectInput,
     loadProjects,
     addToDo,
     removeToDo,
@@ -157,7 +157,10 @@ const masterControl = (() => {
     loadTab();
     DOMcontroller.addInput();
     const addProjectButton = document.querySelector('#add-project-button');
-    addProjectButton.addEventListener('click', DOMcontroller.addProjectInput);
+    addProjectButton.addEventListener(
+      'click',
+      DOMcontroller.toggleProjectInput
+    );
     const projectForm = document.querySelector('#project-form');
     projectForm.addEventListener('submit', masterControl.newProject);
     const toDoForm = document.querySelector('#todo-form');
@@ -171,6 +174,7 @@ const masterControl = (() => {
     const formData = new FormData(e.target);
     const toDoObj = Object.fromEntries(formData);
     currentProjectObj.addToDoObj(toDoObj);
+    e.target.reset();
     storage.saveProject(currentProjectObj);
     DOMcontroller.addToDo(toDoObj);
   }
@@ -184,7 +188,10 @@ const masterControl = (() => {
 
   function newProject(e) {
     e.preventDefault();
-    const project = document.querySelector('#project-name').value;
+    DOMcontroller.toggleProjectInput();
+    const projectInput = document.querySelector('#project-name');
+    const project = projectInput.value;
+    projectInput.value = '';
     let newProject = projectControl.createProjectObj(project);
     storage.saveProject(newProject);
     loadProjects();
