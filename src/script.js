@@ -1,5 +1,5 @@
-// import './style.css';
-// import { isToday, isThisWeek } from 'date-fns';
+import './style.css';
+import { isToday, isThisWeek } from 'date-fns';
 
 const storage = (() => {
   function saveProject(projectObj) {
@@ -46,7 +46,33 @@ const projectControl = (() => {
   function loadProjectObj(projObj) {
     return Object.setPrototypeOf(projObj, projectObjProto);
   }
-  return { createProjectObj, loadProjectObj };
+
+  function getDueThisWeek() {
+    const arr = storage.getAllProjectNames();
+    const projects = arr.map((name) => storage.getProject(name));
+    return projects.reduce((acc, project) => {
+      project.arr.forEach((element) => {
+        if (isThisWeek(new Date(element.dueDate))) {
+          acc.push(element);
+        }
+      });
+      return acc;
+    }, []);
+  }
+
+  function getDueToday() {
+    const arr = storage.getAllProjectNames();
+    const projects = arr.map((name) => storage.getProject(name));
+    return projects.reduce((acc, project) => {
+      project.arr.forEach((element) => {
+        if (isToday(new Date(element.dueDate))) {
+          acc.push(element);
+        }
+      });
+      return acc;
+    }, []);
+  }
+  return { createProjectObj, loadProjectObj, getDueThisWeek, getDueToday };
 })();
 
 const DOMcontroller = (() => {
@@ -80,7 +106,6 @@ const DOMcontroller = (() => {
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
-    console.log(projectNameArr);
     for (const projectName of projectNameArr) {
       if (projectName !== 'Home') {
         const li = document.createElement('li');
@@ -121,9 +146,9 @@ const DOMcontroller = (() => {
 
   function updateToDo() {}
 
-  function loadTab(projectObj) {
+  function loadTab(toDoArr) {
     clearTab();
-    for (const toDoObj of projectObj.arr) {
+    for (const toDoObj of toDoArr) {
       addToDo(toDoObj);
     }
   }
@@ -154,7 +179,7 @@ const masterControl = (() => {
       storage.saveProject(home);
     }
     loadProjects();
-    loadTab();
+    loadProjectTab();
     DOMcontroller.addInput();
     const addProjectButton = document.querySelector('#add-project-button');
     addProjectButton.addEventListener(
@@ -167,6 +192,9 @@ const masterControl = (() => {
     toDoForm.addEventListener('submit', masterControl.newToDo);
     const projectContainer = document.querySelector('#project-container');
     projectContainer.addEventListener('click', changeProject);
+    document
+      .querySelector('#default-nav')
+      .addEventListener('click', changeProject);
   }
 
   function newToDo(e) {
@@ -204,10 +232,19 @@ const masterControl = (() => {
     //ToDoObj.setPriority and update through DOMcontroller
   }
 
-  function loadTab() {
+  function loadProjectTab() {
     currentProjectObj = storage.getProject(currentProject);
-    console.log(currentProjectObj);
-    DOMcontroller.loadTab(currentProjectObj);
+    DOMcontroller.loadTab(currentProjectObj.arr);
+  }
+
+  function loadDueBy(btn) {
+    let arr;
+    if (btn === 'Today') {
+      arr = projectControl.getDueToday();
+    } else if (btn === 'Week') {
+      arr = projectControl.getDueThisWeek();
+    }
+    DOMcontroller.loadTab(arr);
   }
 
   function readInput() {
@@ -215,13 +252,16 @@ const masterControl = (() => {
   }
 
   function changeProject(e) {
-    console.log(e.target);
-    currentProject = e.target.textContent;
-    console.log(currentProject);
-    loadTab();
+    const btn = e.target.textContent;
+    if (btn === 'Today' || btn === 'Week') {
+      loadDueBy(btn);
+    } else {
+      currentProject = btn;
+      loadProjectTab();
+    }
   }
 
-  return { loadTab, newProject, newToDo, removeToDo, initialise };
+  return { loadProjectTab, newProject, newToDo, removeToDo, initialise };
 })();
 
 // Event listener on sidebar with e.target to know which project is clicked
