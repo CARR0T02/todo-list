@@ -5,25 +5,47 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
   <body>
     <div class="wrapper">
-      <header class="header">To-Do</header>
+      <header class="header"></header>
       <nav class="sidebar">
-        <ul id="nav-buttons" role="list">
-          <li>Home</li>
-          <li>Today</li>
-          <li>Week</li>
-          <li id="project-container">
-            Projects
-            <ul id="projects" role="list">
-              <li>Project 1</li>
-            </ul>
-          </li>
+        <div class="logo">To-Do</div>
+        <ul id="default-nav" role="list">
+          <li class="nav-header clickable">Home</li>
+          <li class="nav-header clickable">Today</li>
+          <li class="nav-header clickable">Week</li>
         </ul>
+        <div class="nav-header">
+          Projects
+          <ul id="project-container" role="list"></ul>
+          <div id="project-input-container">
+            <form class="hidden" action="" id="project-form">
+              <input
+                type="text"
+                name="project-name"
+                placeholder="Project Name"
+                id="project-name"
+                required
+              />
+              <input type="submit" value="Add" id="submit-button" />
+            </form>
+            <svg
+              class="clickable"
+              id="add-project-button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+              />
+            </svg>
+          </div>
+        </div>
       </nav>
-      <div class="content"></div>
+      <div class="content"><div id="main"></div></div>
     </div>
   </body>
 </html>
