@@ -82,7 +82,7 @@ const DOMcontroller = (() => {
     const div = document.createElement('div');
     div.setAttribute('id', 'input-container');
     div.innerHTML = `<form action="#" id='todo-form'>
-          <input type="text" name="title" placeholder="Title: Buy Groceries" required/>
+          <textarea name="title" placeholder="Title: Buy Groceries" required/></textarea>
           <textarea name="desc" id="desc-input" placeholder="Details: "></textarea>
           <input type="date" name="dueDate" required/>
           <select name="priority" id="priority-input" required>
@@ -110,7 +110,7 @@ const DOMcontroller = (() => {
       if (projectName !== 'Home') {
         const li = document.createElement('li');
         li.textContent = projectName;
-        li.classList.add('project');
+        li.classList.add('project-name', 'clickable');
         container.appendChild(li);
       }
     }
@@ -121,9 +121,11 @@ const DOMcontroller = (() => {
     const toDoContainer = document.createElement('div');
     toDoContainer.setAttribute('data-priority', toDoObj.priority);
     toDoContainer.setAttribute('data-title', toDoObj.title);
+    toDoContainer.classList.add('project');
     const checkbox = document.createElement('input');
     checkbox.setAttribute('type', 'checkbox');
     checkbox.classList.add('checkbox');
+    checkbox.classList.add('clickable');
     checkbox.addEventListener('click', masterControl.removeToDo);
     const title = document.createElement('div');
     title.classList.add('todo-title');
@@ -264,12 +266,8 @@ const masterControl = (() => {
   return { loadProjectTab, newProject, newToDo, removeToDo, initialise };
 })();
 
-// Event listener on sidebar with e.target to know which project is clicked
-
 // Hitting enter creates the todo and the edge of it should have check and cross to confirm/cancel adding
 
-// Filter todo by priority
-
-// Check that project doesn't already exist
+// Implement priority into DOM
 
 masterControl.initialise();
